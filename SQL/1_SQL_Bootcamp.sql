@@ -118,3 +118,27 @@ SELECT customer_id, COUNT(amount) FROM payment GROUP BY customer_id ORDER BY COU
 SELECT customer_id, staff_id, SUM(amount) FROM payment GROUP BY staff_id,customer_id ORDER BY customer_id; -- Multiple combinations
 SELECT DATE(payment_date) FROM payment; --DATE converts the cell information for Date
 SELECT DATE(payment_date), SUM(amount) FROM payment GROUP BY DATE ORDER BY SUM;
+--Challenges
+SELECT staff_id, COUNT(payment_id) FROM payment WHERE staff_id IN (1,2) GROUP BY staff_id ORDER BY count DESC;
+SELECT rating, ROUND(AVG(replacement_cost),3) FROM film GROUP BY rating ORDER BY AVG(replacement_cost) DESC;
+SELECT customer_id, SUM(amount) FROM payment GROUP BY customer_id ORDER BY SUM(amount) DESC LIMIT 5;
+
+--HAVING
+/*Used to filter after an aggregation has already taken place, since for this cases is not possible to use 'WHERE'*/
+/*SELECT column, SUM(column) FROM table WHERE column GROUP BY column HAVING SUM(sales) */
+SELECT customer_id, SUM(amount) FROM payment WHERE customer_id NOT IN (184,87,477) GROUP BY customer_id HAVING SUM(amount) > 100;
+SELECT store_id, COUNT(*) FROM customer GROUP BY store_id HAVING COUNT(*)>300;
+--Challenges
+SELECT customer_id, COUNT(payment_id) FROM payment GROUP BY customer_id HAVING COUNT(payment_id)>=40 ORDER BY COUNT(payment_id) DESC;
+SELECT customer_id, SUM(amount) FROM payment WHERE staff_id=2 GROUP BY customer_id HAVING SUM(amount)>100 ORDER BY SUM(amount) DESC;
+
+--================= Assessment Test 1 =================--
+--1
+SELECT customer_id FROM payment WHERE staff_id=2 GROUP BY customer_id HAVING SUM(amount)>110 ORDER BY SUM(amount) DESC;
+--2
+SELECT COUNT(title) FROM film WHERE title LIKE 'J%';
+--3
+SELECT first_name,last_name FROM customer WHERE first_name LIKE 'E%' AND address_id<500 ORDER BY customer_id DESC LIMIT 1;
+
+--=====================================================-- 
+
