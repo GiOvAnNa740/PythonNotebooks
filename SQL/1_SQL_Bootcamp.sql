@@ -2,7 +2,7 @@
 
 /*The Caps, semicolumn and parenthesis are not mandatory, they just improve readability */
 
----------------------------------------------------------
+-------------------SELECT-------------------------------
 
 --SELECT--
 /*SELECT column FROM table */
@@ -19,7 +19,7 @@ SELECT first_name, last_name, email FROM customer;
 SELECT DISTINCT (last_name) FROM customer;
 SELECT DISTINCT (rating) FROM film;
 
--- SELECT COUNT
+--SELECT COUNT
 /*Returns the number of input rows that match the condition on the query,
 the COUNT itself will basically only return the total number of rows for a table,
 it is much more useful when combined with other comands */
@@ -142,3 +142,58 @@ SELECT first_name,last_name FROM customer WHERE first_name LIKE 'E%' AND address
 
 --=====================================================-- 
 
+
+----------------------JOIN------------------------------
+/*
+Join types:
+-INNER
+-OUTER
+-FULL
+-UNIONS
+*/
+
+--AS statement/clause
+/*Allows us to create an 'alias' for a column or result
+This statement is executed at the very end of a query meaning that we cannot use it insede a WHERE operator*/
+/*SELECT column AS new_name FROM table*/
+SELECT amount AS rental_price FROM payment;
+SELECT SUM(amount) AS net_revenue FROM payment;
+SELECT COUNT(amount) AS num_transactions FROM payment;
+SELECT customer_id, SUM(amount) AS total_spent FROM payment GROUP BY customer_id;
+SELECT customer_id, SUM(amount) AS total_spent FROM payment GROUP BY customer_id HAVING SUM(amount)>100; --You need to reffer to the original name and not the Alias
+
+--INNER JOIN
+/*Combine multiple tables together, the result will be the set of records that match in BOTH tables
+If you declare junst JOIN it will be */
+/*SELECT * FROM tableA INNER JOIN tableB ON tableA.col_match=TableB.col_match */
+SELECT * FROM payment INNER JOIN customer ON payment.customer_id=customer.customer_id;
+SELECT payment.customer_id,payment_id,first_name FROM payment INNER JOIN customer ON payment.customer_id=customer.customer_id ORDER BY first_name; -- when a column is exclusive to one table it need to be specified
+
+-- FULL OUTER JOIN
+/*Allows us to specify how to deal with values only present in one of the tables being joined
+Joins every row from every table*/
+/*SELECT * FROM tableA FULL OUTER JOIN tableB ON tableA.col_match=TableB.col_match*/ --this will include null values
+/*SELECT * FROM tableA FULL OUTER JOIN tableB ON tableA.col_match=TableB.col_match WHERE tableA.id IS null OR tableB.id IS null*/
+SELECT * FROM customer FULL OUTER JOIN payment ON customer.customer_id = payment.customer_id;
+SELECT * FROM customer FULL OUTER JOIN payment ON customer.customer_id = payment.customer_id WHERE customer.customer_id IS null OR payment.payment_id IS null; --Verifies null values
+SELECT COUNT(DISTINCT payment.customer_id) FROM payment FULL OUTER JOIN customer ON customer.customer_id = payment.customer_id;
+
+--LEFT OUTER JOIN|LEFT JOIN
+/*Results in a set or records that are in the LEFT table, if there is no match in the right table, the result is null
+On this, the order of the tables matter*/
+/*SELECT * FROM tableA LEFT OUTER JOIN tableB ON tableA.col_match=TableB.col_match*/
+SELECT film.film_id,inventory_id,title FROM film LEFT OUTER JOIN inventory ON inventory.film_id = film.film_id;
+SELECT film.film_id,inventory_id,title FROM film LEFT JOIN inventory ON inventory.film_id = film.film_id WHERE inventory.film_id IS null;
+--RIGHT OUTER JOIN|RIGHT JOIN
+/*Results in a set or records that are in the RIGHT table, if there is no match in the left table, the result is null
+On , the order of the tables matter*/
+/*SELECT * FROM tableA RIGHT OUTER JOIN tableB ON tableA.col_match=TableB.col_match*/
+SELECT film.film_id,inventory_id,title FROM film RIGHT OUTER JOIN inventory ON inventory.film_id = film.film_id;
+SELECT film.film_id,inventory_id,title FROM film RIGHT JOIN inventory ON inventory.film_id = film.film_id WHERE inventory.film_id IS null;
+
+--UNION
+/*Used to combine the result-set of two or more SELECT statements
+It concatenates 2 results together*/
+/*SELECT column_name(s) FROM table1 UNION SELECT column_name(s) FROM table2*/
+SELECT district,email FROM address INNER JOIN customer ON address.address_id = customer.address_id WHERE district='California';
+SELECT title,first_name,last_name FROM film_actor INNER JOIN actor ON film_actor.actor_id=actor.actor_id INNER JOIN film ON film_actor.film_id=film.film_id WHERE first_name='Nick' AND last_name='Wahlberg';
