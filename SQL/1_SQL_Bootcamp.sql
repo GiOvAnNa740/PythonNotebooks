@@ -197,3 +197,100 @@ It concatenates 2 results together*/
 /*SELECT column_name(s) FROM table1 UNION SELECT column_name(s) FROM table2*/
 SELECT district,email FROM address INNER JOIN customer ON address.address_id = customer.address_id WHERE district='California';
 SELECT title,first_name,last_name FROM film_actor INNER JOIN actor ON film_actor.actor_id=actor.actor_id INNER JOIN film ON film_actor.film_id=film.film_id WHERE first_name='Nick' AND last_name='Wahlberg';
+
+--=====================================================-- 
+
+
+-----------------Advanced SQL commands-------------------
+
+--Timestamps and Extractions
+
+--SHOW ALL
+/*Shows all available settings and information of your current workspace*/ 
+SHOW ALL
+SHOW TIMEZONE
+SELECT NOW() --Current date-time
+SELECT CURRENT_DATE
+SELECT EXTRACT(YEAR FROM payment_date) FROM payment;
+
+--EXTRACT()
+/*Allows you to extract or obtain a sub-component of a date value */ 
+SELECT EXTRACT(YEAR FROM payment_date) AS year FROM payment;
+SELECT EXTRACT(QUARTER FROM payment_date) AS quarter FROM payment;
+
+--AGE()
+/*Calculates and returns the current age given a timastamp */
+SELECT AGE(payment_date) FROM payment;
+
+--TO_CHAR()
+/*General function to convert data types to text. Usefull for timestamp formatting 
+There are online tables available showing all text formating that can be used*/
+SELECT TO_CHAR(payment_date,'MONTH-YYYY') FROM payment;
+SELECT TO_CHAR(payment_date,'DAY,MONTH,YYYY') FROM payment
+SELECT TO_CHAR(payment_date,'MONTH/YYYY') FROM payment;
+
+---------------------------------------------------------
+--General Challenge--
+SELECT DISTINCT TO_CHAR(payment_date,'MONTH') FROM payment;
+SELECT COUNT(*) FROM payment WHERE EXTRACT(dow FROM payment_date)=1;
+
+--=====================================================--  
+
+--Mathematical Operators
+/*There are online tables available showing all operators that can be used*/
+SELECT ROUND(rental_rate/replacement_cost,3)*100 FROM film;
+SELECT 0.1 * replacement_cost AS deposit FROM film;
+
+--String Functions and Operators
+SELECT first_name || ' ' || last_name AS full_name FROM customer; --> || is for concatenating
+SELECT first_name || ' ' || UPPER(last_name) AS full_name FROM customer;
+/*LEFT allows you to select the number of characters from the string counting from the left*/
+SELECT LOWER(LEFT(first_name,1)) || LOWER(last_name) || '@gmail.com' AS email FROM customer; 
+
+--SubQuery
+/*The SubQuery is performed first since it is inside the parenthesys*/
+SELECT title,rental_rate FROM film WHERE rental_rate > (SELECT AVG(rental_rate) FROM film);
+SELECT film_id, title FROM film WHERE film_id IN (SELECT inventory.film_id FROM rental INNER JOIN inventory ON inventory.inventory_id = rental.inventory_id 
+WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30') ORDER BY title;
+SELECT first_name,last_name FROM customer AS c WHERE EXISTS(SELECT * FROM payment AS p WHERE p.customer_id=c.customer_id AND amount>11);
+
+--Self-join
+/*Can be viewed as a join of two copies of the same table
+It is necessary to use an alias for the table, otherwise the table names would be ambiguous*/
+/*SELECT tableA.col, tableB.col FROM table AS tableA JOIN table AS tableB ON tableA.some_col = tableB.some_col*/
+SELECT f1.title, f2.title, f1.length FROM film AS f1 INNER JOIN film AS f2 ON f1.film_id != f2.film_id AND f1.length=f2.length; -- Joining different movies that have the same length
+
+--================= Assessment Test 1 =================--
+--1
+SELECT * FROM cd.facilities;
+--2
+SELECT name,membercost FROM cd.facilities;
+--3
+SELECT * FROM cd.facilities WHERE membercost!=0;
+--4
+SELECT * FROM cd.facilities WHERE membercost!=0 AND membercost< monthlymaintenance/50;
+--5
+SELECT * FROM cd.facilities WHERE name ILIKE '%tennis%';
+--6
+SELECT * FROM cd.facilities WHERE facid IN (1,5);
+--7
+SELECT memid,surname,firstname,joindate FROM cd.members WHERE joindate>='2012-09-01';
+--8
+SELECT DISTINCT surname FROM cd.members ORDER BY surname LIMIT 10;
+--or
+SELECT MAX(joindate) FROM cd.members;
+--9
+SELECT joindate FROM cd.members ORDER BY memid DESC LIMIT 1;
+--10
+SELECT COUNT(*) FROM cd.facilities WHERE guestcost>=10;
+--11
+SELECT facid,SUM(slots) AS Total_Slots FROM cd.bookings WHERE starttime>='2012-09-01' AND starttime<='2012-10-01' GROUP BY facid ORDER BY Total_Slots;
+--12
+SELECT facid,SUM(slots) AS total_slots FROM cd.bookings GROUP BY facid HAVING SUM(slots)>1000 ORDER BY facid;
+--13
+SELECT cd.bookings.starttime,cd.facilities.name FROM cd.bookings INNER JOIN cd.facilities ON cd.bookings.facid=cd.facilities.facid
+WHERE cd.facilities.facid IN (0,1) AND cd.bookings.starttime>='2012-09-21' AND cd.bookings.starttime<'2012-09-22' ORDER BY cd.bookings.starttime;
+--14
+SELECT cd.bookings.starttime,cd.members.firstname,cd.members.surname FROM cd.bookings INNER JOIN cd.members ON cd.bookings.memid=cd.members.memid
+WHERE firstname ILIKE 'David' AND surname ILIKE 'Farrell';
+--=====================================================-- 
