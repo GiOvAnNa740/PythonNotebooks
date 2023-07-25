@@ -559,3 +559,124 @@ VALUES(
 
 
 ---------Conditional Expressions and Procedures----------
+
+--CASE
+/*We can use the CASE statement to only execute SQL code when certain conditions are met*/
+/*-General CASE:
+CASE
+    WHEN condition1 THEN result1
+    WHEN condition2 THEN result2
+    ELSE some_other_condition
+END
+
+-CASE Expression:
+CASE expression
+    WHEN value1 THEN result1
+    WHEN value2 THEN result2
+    ELSE some_other_result
+END*/
+
+SELECT customer_id,
+CASE
+	WHEN (customer_id<=100) THEN 'Premium'
+	WHEN (customer_id BETWEEN 100 AND 200) THEN 'Plus'
+	ELSE 'Regular'
+END 
+AS customer_class
+FROM customer;
+
+SELECT customer_id,
+CASE customer_id --the expression is the best option when you're checking for a single value each time
+	WHEN 2 THEN 'Winner'
+	WHEN 5 THEN 'Second Place'
+	ELSE 'Loser'
+END
+AS raffle_results
+FROM customer;
+
+SELECT 
+SUM(CASE rental_rate
+	WHEN 0.99 THEN 1
+	ELSE 0
+END)
+AS bargains,
+SUM(CASE rental_rate
+	WHEN 2.99 THEN 1
+	ELSE 0
+END) 
+AS regular,
+SUM(CASE rental_rate
+	WHEN 4.99 THEN 1
+	ELSE 0
+END) 
+AS expensive
+FROM film;
+
+--=====================================================--  
+--General Challenge--
+
+SELECT 
+SUM(CASE rating
+	WHEN 'R' THEN 1
+	ELSE 0
+END)
+AS r,
+SUM(CASE rating
+	WHEN 'PG' THEN 1
+	ELSE 0
+END)
+AS pg,
+SUM(CASE rating
+	WHEN 'PG-13' THEN 1
+	ELSE 0
+END)
+AS pg13
+FROM film;
+--------------------------------------------------------- 
+
+--COALESCE
+/*Accepts an unlimited number of arguments and returns the first argument that is not null if any
+It is usefull when querying a table that contains null values*/
+/*SELECT COALESCE (arg_1,arg_2,...arg_n)*/
+
+SELECT item,(price - COALESCE(discount,0) --when it finds a null values, it will be replaced by zero in order to perform the operation, but no change will be made on the actual table
+AS final FROM products);
+
+--CAST
+/*Lets you convert from one data type to another (when possible)*/
+/*SELECT CAST ('5' AS INTEGER)
+OR
+SELECT CAST '5'::INTEGER; -> For PosgreSQL*/
+
+SELECT CAST ('5' AS INTEGER) AS new_result;
+SELECT CAST '10'::INTEGER;
+
+--NULLIF
+/*Takes 2 inputs and returns NULL if both are equal*/
+/*NULLIF (arg1,arg2)*/
+
+SELECT(
+    SUM(CASE WHEN department='A' THEN 1 ELSE 0 END)/ --If department='B' is zero this would return an error without the NULLIF
+    NULLIF(SUM(CASE WHEN department='B' THEN 1 ELSE 0 END),0) --it will retrieve the values from the first argument and compare to the second argument, returning null if they match
+) AS departments_ratio 
+FROM depts
+
+--VIEW
+/*A View is a database object made out of a stored Query
+Used as a virtual table, so it does not store data physically
+Usefull for long queries that will be used regularly
+Viwes can also be dropped and altered as normal tables
+*/
+
+CREATE VIEW customer_info AS
+SELECT first_name,last_name,address FROM customer
+INNER JOIN address 
+ON customer.address_id=address.address_id;
+
+SELECT * FROM customer_info --> Selecting from the created view
+
+CREATE OR REPLACE VIEW customer_info AS --> Can be used to rewrite a view
+SELECT first_name,last_name,address FROM customer
+INNER JOIN address 
+ON customer.address_id=address.address_id;
+
