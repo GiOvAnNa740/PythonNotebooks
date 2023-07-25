@@ -294,3 +294,268 @@ WHERE cd.facilities.facid IN (0,1) AND cd.bookings.starttime>='2012-09-21' AND c
 SELECT cd.bookings.starttime,cd.members.firstname,cd.members.surname FROM cd.bookings INNER JOIN cd.members ON cd.bookings.memid=cd.members.memid
 WHERE firstname ILIKE 'David' AND surname ILIKE 'Farrell';
 --=====================================================-- 
+
+
+-------------Creating Databases and Tables---------------
+
+--Data Types:
+/*
+-Boolean (True or False)
+-Character (char, varchar, text)
+-Numeric (integer, floating-point number)
+-Temporal (date, time, timestamp, interval)
+
+Not as commom data types:
+-UUID
+-Array
+-JSON
+-Hstore
+-Special types
+*/
+
+--Primary Keys (PK)
+/*Used To identify a row uniquely in a table.
+Integer based and unique*/
+
+--Foreign Keys
+/*Field or group of field in a table that uniquely identifies a row in another table
+A foreign key is defined in a table that references to the primary key of the other table
+The table that contain the foreign key is called referencing/child table, whereas the source is referenced/parent table*/
+
+/*Table keys will be listed under 'contraints' on each table*/
+
+---------------------------------------------------------
+
+--Constraints
+/*
+2 categories:
+-Column constraints
+-Table constraints
+
+Types:
+-NOT NULL
+-UNIQUE
+-PRIMARY Key
+-FOREIGN Key
+-CHECK
+-EXCLUSION
+-REFERENCES
+*/
+
+---------------------------------------------------------
+
+--CREATE
+/*CREATE TABLE table_name(
+    column_name TYPE column_constraint,
+    column_name TYPE column_constraint,
+    table_constraint table_constraint
+) INHERITS existing_table_name;*/
+
+CREATE TABLE account(
+	user_id SERIAL PRIMARY KEY, --SERIAL should only be used on the primary key and do not need a value to be provided
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password VARCHAR(50) NOT NULL,
+	email VARCHAR(250) UNIQUE NOT NULL,
+	created_on TIMESTAMP NOT NULL,
+	last_login TIMESTAMP
+);
+
+CREATE TABLE job(
+	job_id SERIAL PRIMARY KEY,
+	job_name VARCHAR(200) UNIQUE NOT NULL
+);
+
+--REFERENCES
+/*Used for referencing a Foreign Key on a Intermediate table*/
+
+CREATE TABLE account_job(
+	user_id INTEGER REFERENCES account(user_id),
+	job_id INTEGER REFERENCES job(job_id),
+	hire_date TIMESTAMP
+);
+
+--INSERT 
+/*Allows you to add rows to a table*/
+/*INSERT INTO table (column1, column2, ...)
+  VALUES
+    (value1, value2, ...),
+    (value1, value2, ...),...;
+    
+OR when inserting from another table
+
+INSERT INTO table (column1, column2, ...)
+  SELECT column1, column2,...
+  FROM another_table
+  WHERE condition;
+*/
+
+INSERT INTO account(username,password,email,created_on)
+VALUES
+('Jose','password','jose@email.com',CURRENT_TIMESTAMP);
+
+INSERT INTO job(job_name)
+VALUES
+('Astronaut');
+
+INSERT INTO account_job(user_id,job_id,hire_date)
+VALUES
+(1,1,CURRENT_TIMESTAMP); --In case you try to insert ids that are not in the database, an error will occur
+
+--UPDATE
+/*Allows to modify existing rows*/
+/*UPDATE table 
+  SET column1 =value1,
+    column2=value2,...
+  WHERE 
+    condition;*/
+
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+WHERE last_login IS NULL;
+
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP; --If the WHERE statement is not provided, all rows will be overwrite to the new value
+
+UPDATE account 
+SET last_login = created_on; -- You may also update based on another column
+
+--UPDATE join
+/*UPDATE tableA
+  SET original_col = tableB.new_col
+  FROM tableB
+  WHERE tabelA.id=tableB.id;*/
+
+UPDATE account_job 
+SET hire_date = account.created_on
+FROM account
+WHERE account_job.user_id = account.user_id;
+
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+RETURNING email, created_on, last_login; -- RETURNING will return the selected rows
+
+--DELETE
+/*DELETE FROM table 
+  WHERE row_id = 1;
+  
+  OR
+
+  DELETE FROM tableA
+  USING tableB
+  WHERE tableA.id=tableB.id;*/
+  
+DELETE FROM table --will delete all rows
+
+DELETE FROM job
+WHERE job_id=3;
+
+DELETE FROM job
+WHERE job_name='Cowboy';
+
+--ALTER TABLE 
+/*Allows you to change an existing table structure*/
+/*ALTER TABLE table_name 
+action;*/
+
+ALTER TABLE information
+RENAME TO new_info;
+
+ALTER TABLE new_info
+RENAME COLUMN person TO people;
+
+ALTER TABLE new_info
+ALTER COLUMN people DROP NOT NULL; -- You may use either DROP or SET to modify constraints
+
+--DROP
+/*Allows for the complete removal of a column on a table*/
+/*ALTER TABLE table_name 
+DROP COLUMN col_name,... ;
+
+ALTER TABLE table_name 
+DROP COLUMN col_name CASCADE; --CASCADE removes all dependencies
+
+ALTER TABLE table_name 
+DROP COLUMN IF EXISTS col_name; --Check for existance to avoid errors
+*/
+
+ALTER TABLE new_info
+DROP COLUMN people;
+
+ALTER TABLE new_info
+DROP COLUMN IF EXISTS people;
+
+--CHECK constraint
+/*Allows you to create more customized constraints that adhere to a certain condition*/
+/*CREATE TABLE table_name(
+    column_name TYPE column_constraint,
+    column_name TYPE CHECK (column_name>20) ->insert any condition to be checked
+);*/
+
+CREATE TABLE employees(
+	emp_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	birthdate DATE CHECK (birthdate>'1900-01-01'),
+	hire_date DATE CHECK (hire_date>birthdate),
+	salary INTEGER CHECK(salary>0)
+);
+
+
+--================= Assessment Test 2 =================--
+
+--Teachers Table
+CREATE TABLE teachers(
+	teacher_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	homeroom_number INTEGER,
+	department VARCHAR(50),
+	email VARCHAR(250) UNIQUE NOT NULL,
+	phone VARCHAR(11) UNIQUE NOT NULL
+);
+
+--Students Table
+CREATE TABLE students(
+	student_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	homeroom_number INTEGER,
+	email VARCHAR(250) UNIQUE,
+	phone VARCHAR(11) UNIQUE NOT NULL,
+	grad_year DATE NOT NULL CHECK (grad_year>'2022-12-12')
+);
+
+--Inserting the first student
+INSERT INTO students(
+    first_name,
+    last_name,
+    homeroom_number,
+    phone,
+    grad_year)
+VALUES(
+    'Mark',
+    'Watney',
+    5,
+    '7775551234',
+    '2035-12-12');
+
+--Inserting the first teacher
+INSERT INTO teachers(
+    first_name,
+    last_name,
+    homeroom_number,
+	department,
+	email,
+    phone)
+VALUES(
+    'Jonas',
+    'Salk',
+    5,
+	'Biology',
+    'jsalk@school.org',
+    '8884441234');
+
+--=====================================================-- 
+
+
+---------Conditional Expressions and Procedures----------
