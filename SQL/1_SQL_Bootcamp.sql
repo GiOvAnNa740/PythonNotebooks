@@ -169,6 +169,10 @@ If you declare junst JOIN it will be */
 SELECT * FROM payment INNER JOIN customer ON payment.customer_id=customer.customer_id;
 SELECT payment.customer_id,payment_id,first_name FROM payment INNER JOIN customer ON payment.customer_id=customer.customer_id ORDER BY first_name; -- when a column is exclusive to one table it need to be specified
 
+--USING Clause
+/*It is also possible to join with the 'USING' clause*/
+SELECT * FROM city JOIN country USING(country_id, last_update); -- can be used for joining with multiple matching columns
+
 -- FULL OUTER JOIN
 /*Allows us to specify how to deal with values only present in one of the tables being joined
 Joins every row from every table*/
